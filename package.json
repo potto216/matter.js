@@ -38,6 +38,7 @@
     "format": "prettier --write 'packages/**/*.ts' 'codegen/**/*.ts' 'chip-testing/**/*.ts' 'compat/**/*.ts'",
     "format-verify": "prettier --check 'packages/**/*.ts' 'codegen/**/*.ts' 'chip-testing/**/*.ts'",
     "matter-device": "matter-run packages/examples/src/device-onoff/DeviceNode.ts",
+    "matter-device-with-level": "matter-run packages/examples/src/device-onoff-with-level/DeviceNodeWithLevel.ts",
     "matter-bridge": "matter-run packages/examples/src/device-bridge-onoff/BridgedDevicesNode.ts",
     "matter-composeddevice": "matter-run packages/examples/src/device-composed-onoff/ComposedDeviceNode.ts",
     "matter-multidevice": "matter-run packages/examples/src/device-multipleonoff/MultiDeviceNode.ts",

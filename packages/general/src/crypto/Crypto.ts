@@ -11,6 +11,9 @@ import { MatterError, NoProviderError } from "../MatterError.js";
 import { Endian } from "../util/Bytes.js";
 import { DataReader } from "../util/DataReader.js";
 import { PrivateKey } from "./Key.js";
+import { Logger } from "../log/Logger.js";
+
+const logger = Logger.get("Crypto");
 
 export const ec = {
     p256,
@@ -35,12 +38,36 @@ export abstract class Crypto {
     };
 
     abstract encrypt(key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array;
-    static readonly encrypt = (key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array =>
-        Crypto.get().encrypt(key, data, nonce, aad);
+
+    static readonly encrypt = (key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array => {
+        const result = Crypto.get().encrypt(key, data, nonce, aad);
+
+        // Convert key, nonce, and aad to hex strings
+        const keyString = utils.bytesToHex(key);
+        const nonceString = utils.bytesToHex(nonce);
+        const aadString = aad ? utils.bytesToHex(aad) : undefined;
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL Key: ${keyString}, Nonce: ${nonceString}, AAD: ${aadString}`);
+
+        return result;
+    };
 
     abstract decrypt(key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array;
-    static readonly decrypt = (key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array =>
-        Crypto.get().decrypt(key, data, nonce, aad);
+
+    static readonly decrypt = (key: Uint8Array, data: Uint8Array, nonce: Uint8Array, aad?: Uint8Array): Uint8Array => {
+        const result = Crypto.get().decrypt(key, data, nonce, aad);
+
+        // Convert key, nonce, and aad to hex strings
+        const keyString = utils.bytesToHex(key);
+        const nonceString = utils.bytesToHex(nonce);
+        const aadString = aad ? utils.bytesToHex(aad) : undefined;
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL Key: ${keyString}, Nonce: ${nonceString}, AAD: ${aadString}`);
+
+        return result;
+    };
 
     abstract getRandomData(length: number): Uint8Array;
     static readonly getRandomData = (length: number): Uint8Array => Crypto.get().getRandomData(length);
@@ -68,8 +95,17 @@ export abstract class Crypto {
     };
 
     abstract ecdhGeneratePublicKey(): { publicKey: Uint8Array; ecdh: any };
-    static readonly ecdhGeneratePublicKey = (): { publicKey: Uint8Array; ecdh: any } =>
-        Crypto.get().ecdhGeneratePublicKey();
+    static readonly ecdhGeneratePublicKey = (): { publicKey: Uint8Array; ecdh: any } => {
+        const result = Crypto.get().ecdhGeneratePublicKey();
+
+        // Convert publicKey to hex string
+        const publicKeyString = utils.bytesToHex(result.publicKey);
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL ECDH Generate PublicKey: ${publicKeyString}`);
+
+        return result;
+    };
 
     abstract ecdhGeneratePublicKeyAndSecret(peerPublicKey: Uint8Array): {
         publicKey: Uint8Array;
@@ -81,8 +117,17 @@ export abstract class Crypto {
         Crypto.get().ecdhGeneratePublicKeyAndSecret(peerPublicKey);
 
     abstract ecdhGenerateSecret(peerPublicKey: Uint8Array, ecdh: any): Uint8Array;
-    static readonly ecdhGenerateSecret = (peerPublicKey: Uint8Array, ecdh: any): Uint8Array =>
-        Crypto.get().ecdhGenerateSecret(peerPublicKey, ecdh);
+    static readonly ecdhGenerateSecret = (peerPublicKey: Uint8Array, ecdh: any): Uint8Array => {
+        const result = Crypto.get().ecdhGenerateSecret(peerPublicKey, ecdh);
+
+        // Convert peerPublicKey to hex string
+        const peerPublicKeyString = utils.bytesToHex(peerPublicKey);
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL ECDH Generate Secret PeerPublicKey: ${peerPublicKeyString}, ECDH: ${ecdh}`);
+
+        return result;
+    };
 
     abstract hash(data: Uint8Array | Uint8Array[]): Uint8Array;
     static readonly hash = (data: Uint8Array | Uint8Array[]): Uint8Array => Crypto.get().hash(data);
@@ -93,7 +138,18 @@ export abstract class Crypto {
         salt: Uint8Array,
         iteration: number,
         keyLength: number,
-    ): Promise<Uint8Array> => Crypto.get().pbkdf2(secret, salt, iteration, keyLength);
+    ): Promise<Uint8Array> => {
+        const result = Crypto.get().pbkdf2(secret, salt, iteration, keyLength);
+
+        // Convert secret and salt to hex strings
+        const secretString = utils.bytesToHex(secret);
+        const saltString = utils.bytesToHex(salt);
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL PBKDF2 Secret: ${secretString}, Salt: ${saltString}, Iteration: ${iteration}, KeyLength: ${keyLength}`);
+
+        return result;
+    };
 
     abstract hkdf(secret: Uint8Array, salt: Uint8Array, info: Uint8Array, length?: number): Promise<Uint8Array>;
     static readonly hkdf = (
@@ -101,7 +157,19 @@ export abstract class Crypto {
         salt: Uint8Array,
         info: Uint8Array,
         length?: number,
-    ): Promise<Uint8Array> => Crypto.get().hkdf(secret, salt, info, length);
+    ): Promise<Uint8Array> => {
+        const result = Crypto.get().hkdf(secret, salt, info, length);
+
+        // Convert secret, salt, and info to hex strings
+        const secretString = utils.bytesToHex(secret);
+        const saltString = utils.bytesToHex(salt);
+        const infoString = utils.bytesToHex(info);
+
+        // Log the converted values
+        logger.debug(`CRYPTOGRAPHIC_KEY_MATERIAL HKDF Secret: ${secretString}, Salt: ${saltString}, Info: ${infoString}, Length: ${length}`);
+
+        return result;
+    };
 
     abstract hmac(key: Uint8Array, data: Uint8Array): Uint8Array;
     static readonly hmac = (key: Uint8Array, data: Uint8Array): Uint8Array => Crypto.get().hmac(key, data);
